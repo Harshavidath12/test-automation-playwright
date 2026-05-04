@@ -493,24 +493,37 @@ def run_test():
 
                 if action_locator:
                     action_locator.click()
+                    
+                    # Wait for the transliterating state to finish, if applicable
+                    try:
+                        page.get_by_role("button", name=re.compile(r"Transliterating", re.IGNORECASE)).wait_for(state="hidden", timeout=30000)
+                    except Exception:
+                        pass
 
-                page.wait_for_timeout(max(0, int(args.wait_ms)))
-                
-                # Wait for visible content - retry a few times if empty
+                # Instead of a blind wait, dynamically wait for text to appear and stabilize
                 actual_output = ""
-                tries = max(1, int(args.retries))
+                current = ""
+                tries = max(1, int(args.retries) * 2)
                 for i in range(tries):
                     current = _read_output(is_chat, output_locator)
-                    if not current:
-                        page.wait_for_timeout(max(0, int(args.retry_wait_ms)))
-                        continue
-                    if prev_output and current == prev_output:
-                        page.wait_for_timeout(max(0, int(args.retry_wait_ms)))
-                        continue
-                    if current:
-                        actual_output = current
+                    if current and current != prev_output:
                         break
-                    page.wait_for_timeout(max(0, int(args.retry_wait_ms)))
+                    page.wait_for_timeout(max(500, int(args.retry_wait_ms)))
+
+                # Now wait for the output to stabilize (stop changing) as it might stream
+                if current and current != prev_output:
+                    stable_count = 0
+                    for _ in range(60):  # Up to 30 seconds waiting for generation to finish
+                        page.wait_for_timeout(500)
+                        new_current = _read_output(is_chat, output_locator)
+                        if new_current == current:
+                            stable_count += 1
+                            if stable_count >= 3:  # 1.5 seconds of no changes
+                                break
+                        else:
+                            stable_count = 0
+                            current = new_current
+                    actual_output = current
 
                 if prev_output and actual_output == "" and prev_output != "":
                     raise RuntimeError("Output did not update for this input (still showing previous output).")
