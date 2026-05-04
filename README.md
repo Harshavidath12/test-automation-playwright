@@ -47,7 +47,15 @@ IT3040_Assignment_1/
 
 4. Run the automation script  
 
-   python IT23622814_test_automation.py --excel "IT23622814_Assignment 1 - Test cases.xlsx" --url "https://www.pixelssuite.com/chat-translator" --wait-ms 5000 --type-delay-ms 80 --slow-mo-ms 200 --save-every 1
+## if the folder is saved in the D drive run this command: 
+
+   python IT23622814_test_automation.py --excel "D:\IT23622814\IT23622814.xlsx" --input-col "Input" --expected-col "Expected output" --url "https://www.pixelssuite.com/chat-translator" --wait-ms 5000 --type-delay-ms 80 --slow-mo-ms 200 --save-every 1
+
+## if the folder is saved in the C drive run this command : 
+
+python IT23622814_test_automation.py --excel "C:\IT23622814\IT23622814.xlsx" --input-col "Input" --expected-col "Expected output" --url "https://www.pixelssuite.com/chat-translator" --wait-ms 5000 --type-delay-ms 80 --slow-mo-ms 200 --save-every 1
+
+
    
 ---
 
